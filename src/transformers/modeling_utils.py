@@ -93,7 +93,11 @@ from .utils import (
     replace_return_docstrings,
     strtobool,
 )
-from .utils.hub import convert_file_size_to_int, create_and_tag_model_card, get_checkpoint_shard_files
+from .utils.hub import (
+    convert_file_size_to_int,
+    create_and_tag_model_card,
+    get_checkpoint_shard_files,
+)
 from .utils.import_utils import (
     ENV_VARS_TRUE_VALUES,
     is_sagemaker_mp_enabled,
@@ -101,7 +105,6 @@ from .utils.import_utils import (
     is_torchdynamo_compiling,
 )
 from .utils.quantization_config import BitsAndBytesConfig, QuantizationMethod
-
 
 XLA_USE_BF16 = os.environ.get("XLA_USE_BF16", "0").upper()
 XLA_DOWNCAST_BF16 = os.environ.get("XLA_DOWNCAST_BF16", "0").upper()
@@ -1482,7 +1485,7 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
 
         config = copy.deepcopy(config)  # We do not want to modify the config inplace in _from_config.
 
-        if config._attn_implementation_internal is not None:
+        if hasattr(config, "_attn_implementation_internal") and config._attn_implementation_internal is not None:
             # In this case, the config has been created with the attn_implementation set by the user, which we
             # should respect.
             attn_implementation = config._attn_implementation_internal
@@ -3936,7 +3939,9 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
             else:
                 # Load from our TensorFlow 2.0 checkpoints
                 try:
-                    from .modeling_tf_pytorch_utils import load_tf2_checkpoint_in_pytorch_model
+                    from .modeling_tf_pytorch_utils import (
+                        load_tf2_checkpoint_in_pytorch_model,
+                    )
 
                     model, loading_info = load_tf2_checkpoint_in_pytorch_model(
                         model, resolved_archive_file, allow_missing_keys=True, output_loading_info=True
@@ -3950,7 +3955,9 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
                     raise
         elif from_flax:
             try:
-                from .modeling_flax_pytorch_utils import load_flax_checkpoint_in_pytorch_model
+                from .modeling_flax_pytorch_utils import (
+                    load_flax_checkpoint_in_pytorch_model,
+                )
 
                 model = load_flax_checkpoint_in_pytorch_model(model, resolved_archive_file)
             except ImportError:
